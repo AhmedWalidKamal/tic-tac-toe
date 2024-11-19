@@ -6,7 +6,7 @@ import { initializeGame } from "./templates/script";
 export default async function (manager: Manager, _settings: ComponentSettings) {
   // Set up route for computer moves
   manager.route("/api/next-move", async (request) => {
-    const { board } = await request.json();
+    const { board } = request.body;
 
     // Find available moves
     const availableMoves = board.reduce(

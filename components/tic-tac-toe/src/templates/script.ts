@@ -1,6 +1,6 @@
 export const initializeGame = () => {
   let currentPlayer = "X";
-  let gameBoard = Array(9).fill("");
+  let gameBoard: string[] = Array(9).fill("");
   let gameActive = true;
 
   const playerSelect = document.getElementById("player-symbol");
@@ -29,9 +29,34 @@ export const initializeGame = () => {
     return null;
   }
 
+  function checkGameState(board: string[]): {
+    gameOver: boolean;
+    message: string | null;
+  } {
+    const winner = checkWinner(board);
+    if (winner) {
+      return {
+        gameOver: true,
+        message: `Player ${winner} wins!`,
+      };
+    }
+
+    if (!board.includes("")) {
+      return {
+        gameOver: true,
+        message: "It's a draw!",
+      };
+    }
+
+    return {
+      gameOver: false,
+      message: null,
+    };
+  }
+
   async function computerMove() {
     try {
-      const response = await fetch("/api/next-move", {
+      const response = await fetch("/webcm/tic-tac-toe/api/next-move", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,18 +79,10 @@ export const initializeGame = () => {
       cell.textContent = currentPlayer;
     }
 
-    const winner = checkWinner(gameBoard);
-    if (winner) {
+    const gameState = checkGameState(gameBoard);
+    if (gameState.gameOver) {
       if (statusEl) {
-        statusEl.textContent = `Player ${winner} wins!`;
-      }
-      gameActive = false;
-      return;
-    }
-
-    if (!gameBoard.includes("")) {
-      if (statusEl) {
-        statusEl.textContent = "It's a draw!";
+        statusEl.textContent = gameState.message!;
       }
       gameActive = false;
       return;
