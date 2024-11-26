@@ -56,7 +56,7 @@ export const initializeGame = () => {
     };
   }
 
-  async function computerMove() {
+  async function getComputerMove() {
     try {
       const response = await fetch(COMPUTER_WORKER_URL, {
         method: "POST",
@@ -66,7 +66,7 @@ export const initializeGame = () => {
         body: JSON.stringify({ board: gameBoard }),
       });
       const { move } = await response.json();
-      handleCellClick(move);
+      return move;
     } catch (error) {
       console.error("Error getting computer move:", error);
     }
@@ -99,7 +99,12 @@ export const initializeGame = () => {
       playerSelect &&
       currentPlayer !== (playerSelect as HTMLInputElement).value
     ) {
-      setTimeout(computerMove, 500);
+      toggleCellsInteractivity(true);
+      setTimeout(async () => {
+        const move = await getComputerMove();
+        handleCellClick(move);
+        toggleCellsInteractivity(false);
+      }, 500);
     }
   }
 
@@ -115,6 +120,7 @@ export const initializeGame = () => {
     cells.forEach((cell) => {
       (cell as HTMLElement).textContent = "";
     });
+    toggleCellsInteractivity(false);
 
     if (statusEl) {
       statusEl.textContent = "Choose your symbol and start playing!";
@@ -125,8 +131,25 @@ export const initializeGame = () => {
     restartGame();
 
     if (symbol === "O") {
-      setTimeout(computerMove, 500);
+      playComputerMove();
     }
+  }
+
+  function playComputerMove() {
+    toggleCellsInteractivity(true);
+    setTimeout(async () => {
+      const move = await getComputerMove();
+      handleCellClick(move);
+      toggleCellsInteractivity(false);
+    }, 500);
+  }
+
+  function toggleCellsInteractivity(disabled: boolean) {
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach((cell) => {
+      (cell as HTMLElement).style.pointerEvents = disabled ? "none" : "auto";
+      (cell as HTMLElement).style.opacity = disabled ? "0.7" : "1";
+    });
   }
 
   // Event Listeners
