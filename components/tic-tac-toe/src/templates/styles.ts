@@ -1,12 +1,23 @@
 export const styles = `
   .widget-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      max-width: 300px;
-      width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .widget-content {
+    display: flex;
+    align-self: flex-start;
+    flex-direction: column;
+    padding: 40px;
+    margin-top: 50px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 300px;
+    width: 100%;
   }
 
   .widget-header {
