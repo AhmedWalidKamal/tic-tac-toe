@@ -1,5 +1,5 @@
 export const initializeGame = () => {
-  const WORKER_URL =
+  const COMPUTER_WORKER_URL =
     "https://computer-adversary-worker.ahmed3walid96.workers.dev/";
   let currentPlayer = "X";
   let gameBoard: string[] = Array(9).fill("");
@@ -58,7 +58,7 @@ export const initializeGame = () => {
 
   async function computerMove() {
     try {
-      const response = await fetch(WORKER_URL, {
+      const response = await fetch(COMPUTER_WORKER_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -107,12 +107,26 @@ export const initializeGame = () => {
     gameBoard = Array(9).fill("");
     gameActive = true;
     currentPlayer = "X";
-    if (statusEl) {
-      statusEl.textContent = `Player ${currentPlayer}'s turn`;
+    if (playerSelect instanceof HTMLInputElement) {
+      playerSelect.value = "X";
     }
-    document.querySelectorAll(".cell").forEach((cell) => {
-      cell.textContent = "";
+
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach((cell) => {
+      (cell as HTMLElement).textContent = "";
     });
+
+    if (statusEl) {
+      statusEl.textContent = "Choose your symbol and start playing!";
+    }
+  }
+
+  function handlePlayerSymbolChange(symbol: string) {
+    restartGame();
+
+    if (symbol === "O") {
+      setTimeout(computerMove, 500);
+    }
   }
 
   // Event Listeners
@@ -131,6 +145,9 @@ export const initializeGame = () => {
   }
 
   if (playerSelect) {
-    playerSelect.addEventListener("change", restartGame);
+    playerSelect.addEventListener("change", (e) => {
+      const symbol = (e.target as HTMLSelectElement).value;
+      handlePlayerSymbolChange(symbol);
+    });
   }
 };
