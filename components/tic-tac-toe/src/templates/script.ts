@@ -1,4 +1,6 @@
 export const initializeGame = () => {
+  const WORKER_URL =
+    "https://computer-adversary-worker.ahmed3walid96.workers.dev/";
   let currentPlayer = "X";
   let gameBoard: string[] = Array(9).fill("");
   let gameActive = true;
@@ -56,7 +58,7 @@ export const initializeGame = () => {
 
   async function computerMove() {
     try {
-      const response = await fetch("/webcm/tic-tac-toe/api/next-move", {
+      const response = await fetch(WORKER_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
