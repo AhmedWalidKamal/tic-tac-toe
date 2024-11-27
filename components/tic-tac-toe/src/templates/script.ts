@@ -29,15 +29,22 @@ export const initializeGame = () => {
     });
   }
 
+  function togglePlayerSelectInteractivity(disabled: boolean) {
+    playerSelect.disabled = disabled;
+    playerSelect.style.opacity = disabled ? "0.7" : "1";
+  }
+
   function handlePlayerSymbolChange(symbol: string) {
     gameActive = symbol !== "";
     if (symbol === "") {
       toggleBoardInteractivity(true);
+      togglePlayerSelectInteractivity(false);
       statusEl.textContent = "Please select X or O to start playing!";
       return;
     }
 
     currentPlayer = symbol;
+    togglePlayerSelectInteractivity(true);
 
     gameBoard = Array(9).fill("");
     const cells = document.querySelectorAll(".cell");
@@ -62,6 +69,7 @@ export const initializeGame = () => {
     });
 
     toggleBoardInteractivity(true);
+    togglePlayerSelectInteractivity(false);
 
     statusEl.textContent = "Please select X or O to start playing!";
     statusEl.classList.remove(
