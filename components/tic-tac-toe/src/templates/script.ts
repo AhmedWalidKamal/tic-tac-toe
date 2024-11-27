@@ -55,13 +55,20 @@ export const initializeGame = () => {
 
     const cells = document.querySelectorAll(".cell");
     cells.forEach((cell) => {
-      (cell as HTMLElement).textContent = "";
+      cell.textContent = "";
+      cell.removeAttribute("data-symbol");
     });
 
     toggleBoardInteractivity(true);
 
     if (statusEl) {
       statusEl.textContent = "Please select X or O to start playing!";
+      statusEl.classList.remove(
+        "game-over",
+        "winner-player",
+        "winner-computer",
+        "draw"
+      );
     }
   }
 
@@ -89,12 +96,15 @@ export const initializeGame = () => {
   function checkGameState(board: string[]): {
     gameOver: boolean;
     message: string | null;
+    winner: "player" | "computer" | "draw" | null;
   } {
     const winner = checkWinner(board);
     if (winner) {
+      const isPlayer = winner === currentPlayer;
       return {
         gameOver: true,
-        message: `Player ${winner} wins!`,
+        message: isPlayer ? `You win!` : `Computer wins!`,
+        winner: isPlayer ? "player" : "computer",
       };
     }
 
@@ -102,12 +112,14 @@ export const initializeGame = () => {
       return {
         gameOver: true,
         message: "It's a draw!",
+        winner: "draw",
       };
     }
 
     return {
       gameOver: false,
       message: null,
+      winner: null,
     };
   }
 
@@ -134,12 +146,21 @@ export const initializeGame = () => {
     const cell = document.querySelector(`[data-index="${index}"]`);
     if (cell) {
       cell.textContent = currentPlayer;
+      cell.setAttribute("data-symbol", currentPlayer);
     }
 
     const gameState = checkGameState(gameBoard);
     if (gameState.gameOver) {
       if (statusEl) {
         statusEl.textContent = gameState.message!;
+        statusEl.classList.add("game-over");
+        if (gameState.winner === "player") {
+          statusEl.classList.add("winner-player");
+        } else if (gameState.winner === "computer") {
+          statusEl.classList.add("winner-computer");
+        } else {
+          statusEl.classList.add("draw");
+        }
       }
       gameActive = false;
       return;
@@ -164,6 +185,14 @@ export const initializeGame = () => {
       if (finalState.gameOver) {
         if (statusEl) {
           statusEl.textContent = finalState.message!;
+          statusEl.classList.add("game-over");
+          if (finalState.winner === "player") {
+            statusEl.classList.add("winner-player");
+          } else if (finalState.winner === "computer") {
+            statusEl.classList.add("winner-computer");
+          } else {
+            statusEl.classList.add("draw");
+          }
         }
         gameActive = false;
       } else {
