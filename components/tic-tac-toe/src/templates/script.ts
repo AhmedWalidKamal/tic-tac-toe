@@ -1,6 +1,6 @@
 export const initializeGame = () => {
-  const COMPUTER_WORKER_URL =
-    "https://computer-adversary-worker.ahmed3walid96.workers.dev/";
+  const COMPUTER_MOVE_URL = "/webcm/tic-tac-toe/computer-move";
+
   let currentPlayer = "";
   let gameBoard: string[] = Array(9).fill("");
   let gameActive = false;
@@ -14,7 +14,7 @@ export const initializeGame = () => {
 
   function toggleBoardInteractivity(disabled: boolean) {
     const cells = document.querySelectorAll(".cell");
-    cells.forEach((cell) => {
+    cells.forEach((cell: Element) => {
       (cell as HTMLButtonElement).disabled = disabled;
       (cell as HTMLButtonElement).style.pointerEvents = disabled
         ? "none"
@@ -125,7 +125,7 @@ export const initializeGame = () => {
 
   async function getComputerMove() {
     try {
-      const response = await fetch(COMPUTER_WORKER_URL, {
+      const response = await fetch(COMPUTER_MOVE_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
