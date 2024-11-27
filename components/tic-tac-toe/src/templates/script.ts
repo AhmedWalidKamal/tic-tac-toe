@@ -1,16 +1,22 @@
 export const initializeGame = () => {
+  const getRequiredElement = (id: string): HTMLElement => {
+    const element = document.getElementById(id);
+    if (!element) {
+      throw new Error(`Required element #${id} not found`);
+    }
+    return element;
+  };
+
+  const playerSelect = getRequiredElement("player-symbol") as HTMLSelectElement;
+  const gameBoardEl = getRequiredElement("game-board");
+  const statusEl = getRequiredElement("game-status");
+  const restartBtn = getRequiredElement("restart-game");
+
   const COMPUTER_MOVE_URL = "/webcm/tic-tac-toe/computer-move";
 
   let currentPlayer = "";
   let gameBoard: string[] = Array(9).fill("");
   let gameActive = false;
-
-  const playerSelect = document.getElementById(
-    "player-symbol"
-  ) as HTMLSelectElement;
-  const gameBoardEl = document.getElementById("game-board");
-  const statusEl = document.getElementById("game-status");
-  const restartBtn = document.getElementById("restart-game");
 
   function toggleBoardInteractivity(disabled: boolean) {
     const cells = document.querySelectorAll(".cell");
@@ -24,16 +30,14 @@ export const initializeGame = () => {
   }
 
   function handlePlayerSymbolChange(symbol: string) {
-    currentPlayer = symbol;
     gameActive = symbol !== "";
-
     if (symbol === "") {
       toggleBoardInteractivity(true);
-      if (statusEl) {
-        statusEl.textContent = "Please select X or O to start playing!";
-      }
+      statusEl.textContent = "Please select X or O to start playing!";
       return;
     }
+
+    currentPlayer = symbol;
 
     gameBoard = Array(9).fill("");
     const cells = document.querySelectorAll(".cell");
@@ -42,9 +46,7 @@ export const initializeGame = () => {
     });
 
     toggleBoardInteractivity(false);
-    if (statusEl) {
-      statusEl.textContent = `You are playing as ${symbol}. Your turn!`;
-    }
+    statusEl.textContent = `You are playing as ${symbol}. Your turn!`;
   }
 
   function restartGame() {
@@ -61,15 +63,13 @@ export const initializeGame = () => {
 
     toggleBoardInteractivity(true);
 
-    if (statusEl) {
-      statusEl.textContent = "Please select X or O to start playing!";
-      statusEl.classList.remove(
-        "game-over",
-        "winner-player",
-        "winner-computer",
-        "draw"
-      );
-    }
+    statusEl.textContent = "Please select X or O to start playing!";
+    statusEl.classList.remove(
+      "game-over",
+      "winner-player",
+      "winner-computer",
+      "draw"
+    );
   }
 
   function checkWinner(board: string[]) {
@@ -151,25 +151,21 @@ export const initializeGame = () => {
 
     const gameState = checkGameState(gameBoard);
     if (gameState.gameOver) {
-      if (statusEl) {
-        statusEl.textContent = gameState.message!;
-        statusEl.classList.add("game-over");
-        if (gameState.winner === "player") {
-          statusEl.classList.add("winner-player");
-        } else if (gameState.winner === "computer") {
-          statusEl.classList.add("winner-computer");
-        } else {
-          statusEl.classList.add("draw");
-        }
+      statusEl.textContent = gameState.message!;
+      statusEl.classList.add("game-over");
+      if (gameState.winner === "player") {
+        statusEl.classList.add("winner-player");
+      } else if (gameState.winner === "computer") {
+        statusEl.classList.add("winner-computer");
+      } else {
+        statusEl.classList.add("draw");
       }
       gameActive = false;
       return;
     }
 
     toggleBoardInteractivity(true);
-    if (statusEl) {
-      statusEl.textContent = "Computer is thinking...";
-    }
+    statusEl.textContent = "Computer is thinking...";
 
     setTimeout(async () => {
       const move = await getComputerMove();
@@ -183,48 +179,41 @@ export const initializeGame = () => {
 
       const finalState = checkGameState(gameBoard);
       if (finalState.gameOver) {
-        if (statusEl) {
-          statusEl.textContent = finalState.message!;
-          statusEl.classList.add("game-over");
-          if (finalState.winner === "player") {
-            statusEl.classList.add("winner-player");
-          } else if (finalState.winner === "computer") {
-            statusEl.classList.add("winner-computer");
-          } else {
-            statusEl.classList.add("draw");
-          }
+        statusEl.textContent = finalState.message!;
+        statusEl.classList.add("game-over");
+        if (finalState.winner === "player") {
+          statusEl.classList.add("winner-player");
+        } else if (finalState.winner === "computer") {
+          statusEl.classList.add("winner-computer");
+        } else {
+          statusEl.classList.add("draw");
         }
         gameActive = false;
       } else {
-        if (statusEl) {
-          statusEl.textContent = "Your turn!";
-        }
+        statusEl.textContent = "Your turn!";
         toggleBoardInteractivity(false);
       }
     }, 500);
   }
 
+  //
   // Event Listeners
-  if (playerSelect) {
-    playerSelect.addEventListener("change", (e) => {
-      const symbol = (e.target as HTMLSelectElement).value;
-      handlePlayerSymbolChange(symbol);
-    });
-  }
+  //
 
-  if (gameBoardEl) {
-    gameBoardEl.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement;
-      if (target && target.classList.contains("cell")) {
-        const index = parseInt(target.dataset.index!);
-        handleCellClick(index);
-      }
-    });
-  }
+  playerSelect.addEventListener("change", (e) => {
+    const symbol = (e.target as HTMLSelectElement).value;
+    handlePlayerSymbolChange(symbol);
+  });
 
-  if (restartBtn) {
-    restartBtn.addEventListener("click", restartGame);
-  }
+  gameBoardEl.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target && target.classList.contains("cell")) {
+      const index = parseInt(target.dataset.index!);
+      handleCellClick(index);
+    }
+  });
+
+  restartBtn.addEventListener("click", restartGame);
 
   toggleBoardInteractivity(true);
 };
