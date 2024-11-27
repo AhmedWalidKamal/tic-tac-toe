@@ -1,14 +1,69 @@
 export const initializeGame = () => {
   const COMPUTER_WORKER_URL =
     "https://computer-adversary-worker.ahmed3walid96.workers.dev/";
-  let currentPlayer = "X";
+  let currentPlayer = "";
   let gameBoard: string[] = Array(9).fill("");
-  let gameActive = true;
+  let gameActive = false;
 
-  const playerSelect = document.getElementById("player-symbol");
+  const playerSelect = document.getElementById(
+    "player-symbol"
+  ) as HTMLSelectElement;
   const gameBoardEl = document.getElementById("game-board");
   const statusEl = document.getElementById("game-status");
   const restartBtn = document.getElementById("restart-game");
+
+  function toggleBoardInteractivity(disabled: boolean) {
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach((cell) => {
+      (cell as HTMLButtonElement).disabled = disabled;
+      (cell as HTMLButtonElement).style.pointerEvents = disabled
+        ? "none"
+        : "auto";
+      (cell as HTMLButtonElement).style.opacity = disabled ? "0.7" : "1";
+    });
+  }
+
+  function handlePlayerSymbolChange(symbol: string) {
+    currentPlayer = symbol;
+    gameActive = symbol !== "";
+
+    if (symbol === "") {
+      toggleBoardInteractivity(true);
+      if (statusEl) {
+        statusEl.textContent = "Please select X or O to start playing!";
+      }
+      return;
+    }
+
+    gameBoard = Array(9).fill("");
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach((cell) => {
+      (cell as HTMLElement).textContent = "";
+    });
+
+    toggleBoardInteractivity(false);
+    if (statusEl) {
+      statusEl.textContent = `You are playing as ${symbol}. Your turn!`;
+    }
+  }
+
+  function restartGame() {
+    gameBoard = Array(9).fill("");
+    gameActive = false;
+    currentPlayer = "";
+    playerSelect.value = "";
+
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach((cell) => {
+      (cell as HTMLElement).textContent = "";
+    });
+
+    toggleBoardInteractivity(true);
+
+    if (statusEl) {
+      statusEl.textContent = "Please select X or O to start playing!";
+    }
+  }
 
   function checkWinner(board: string[]) {
     const lines = [
@@ -73,7 +128,7 @@ export const initializeGame = () => {
   }
 
   function handleCellClick(index: number) {
-    if (!gameActive || gameBoard[index]) return;
+    if (!gameActive || gameBoard[index] || currentPlayer === "") return;
 
     gameBoard[index] = currentPlayer;
     const cell = document.querySelector(`[data-index="${index}"]`);
@@ -90,69 +145,44 @@ export const initializeGame = () => {
       return;
     }
 
-    currentPlayer = currentPlayer === "X" ? "O" : "X";
+    toggleBoardInteractivity(true);
     if (statusEl) {
-      statusEl.textContent = `Player ${currentPlayer}'s turn`;
+      statusEl.textContent = "Computer is thinking...";
     }
 
-    if (
-      playerSelect &&
-      currentPlayer !== (playerSelect as HTMLInputElement).value
-    ) {
-      toggleCellsInteractivity(true);
-      setTimeout(async () => {
-        const move = await getComputerMove();
-        handleCellClick(move);
-        toggleCellsInteractivity(false);
-      }, 500);
-    }
-  }
-
-  function restartGame() {
-    gameBoard = Array(9).fill("");
-    gameActive = true;
-    currentPlayer = "X";
-    if (playerSelect instanceof HTMLInputElement) {
-      playerSelect.value = "X";
-    }
-
-    const cells = document.querySelectorAll(".cell");
-    cells.forEach((cell) => {
-      (cell as HTMLElement).textContent = "";
-    });
-    toggleCellsInteractivity(false);
-
-    if (statusEl) {
-      statusEl.textContent = "Choose your symbol and start playing!";
-    }
-  }
-
-  function handlePlayerSymbolChange(symbol: string) {
-    restartGame();
-
-    if (symbol === "O") {
-      playComputerMove();
-    }
-  }
-
-  function playComputerMove() {
-    toggleCellsInteractivity(true);
     setTimeout(async () => {
       const move = await getComputerMove();
-      handleCellClick(move);
-      toggleCellsInteractivity(false);
+      const computerSymbol = currentPlayer === "X" ? "O" : "X";
+
+      gameBoard[move] = computerSymbol;
+      const computerCell = document.querySelector(`[data-index="${move}"]`);
+      if (computerCell) {
+        computerCell.textContent = computerSymbol;
+      }
+
+      const finalState = checkGameState(gameBoard);
+      if (finalState.gameOver) {
+        if (statusEl) {
+          statusEl.textContent = finalState.message!;
+        }
+        gameActive = false;
+      } else {
+        if (statusEl) {
+          statusEl.textContent = "Your turn!";
+        }
+        toggleBoardInteractivity(false);
+      }
     }, 500);
   }
 
-  function toggleCellsInteractivity(disabled: boolean) {
-    const cells = document.querySelectorAll(".cell");
-    cells.forEach((cell) => {
-      (cell as HTMLElement).style.pointerEvents = disabled ? "none" : "auto";
-      (cell as HTMLElement).style.opacity = disabled ? "0.7" : "1";
+  // Event Listeners
+  if (playerSelect) {
+    playerSelect.addEventListener("change", (e) => {
+      const symbol = (e.target as HTMLSelectElement).value;
+      handlePlayerSymbolChange(symbol);
     });
   }
 
-  // Event Listeners
   if (gameBoardEl) {
     gameBoardEl.addEventListener("click", (e) => {
       const target = e.target as HTMLElement;
@@ -167,10 +197,5 @@ export const initializeGame = () => {
     restartBtn.addEventListener("click", restartGame);
   }
 
-  if (playerSelect) {
-    playerSelect.addEventListener("change", (e) => {
-      const symbol = (e.target as HTMLSelectElement).value;
-      handlePlayerSymbolChange(symbol);
-    });
-  }
+  toggleBoardInteractivity(true);
 };
